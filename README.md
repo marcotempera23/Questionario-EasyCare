@@ -44,7 +44,8 @@ create policy "inserimento anonimo"
 ```
 
 2. In `app.js` compila `CONFIG.SUPABASE_URL` e `CONFIG.SUPABASE_ANON_KEY`
-   (*Project Settings → API*). Finché sono vuoti, le risposte vengono solo stampate nella console del browser.
+   (pulsante **Connect** in alto nella dashboard, oppure *Project Settings → Data API* per l'URL e
+   *Project Settings → API Keys* per la chiave **Publishable** `sb_publishable_…`). Finché sono vuoti, le risposte vengono solo stampate nella console del browser.
 
 ## Formato dei dati
 

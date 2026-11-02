@@ -7,8 +7,8 @@
    stampate nella console del browser (utile per i test).
    ========================================================== */
 const CONFIG = {
-  SUPABASE_URL: '',        // es. 'https://abcdefgh.supabase.co'
-  SUPABASE_ANON_KEY: '',   // chiave "anon public"
+  SUPABASE_URL: 'https://fqzvpwiujvjvdricqokg.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_FNCvkAFCzVpZCsYWLdksag_ihtjfNNI', // chiave "Publishable" (sb_publishable_…) oppure "anon public" (eyJ…)
   TABLE: 'risposte_questionario',
   VERSION: '1.0',
 };
@@ -997,7 +997,8 @@ async function submitResponse(payload) {
     method: 'POST',
     headers: {
       apikey: CONFIG.SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+      // le chiavi "legacy" (eyJ…) vanno anche nell'header Authorization; le nuove (sb_publishable_…) no
+      ...(CONFIG.SUPABASE_ANON_KEY.startsWith('eyJ') && { Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }),
       'Content-Type': 'application/json',
       Prefer: 'return=minimal',
     },
