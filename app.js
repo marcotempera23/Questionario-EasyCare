@@ -10,7 +10,7 @@ const CONFIG = {
   SUPABASE_URL: 'https://fqzvpwiujvjvdricqokg.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_FNCvkAFCzVpZCsYWLdksag_ihtjfNNI', // chiave "Publishable" (sb_publishable_…) oppure "anon public" (eyJ…)
   TABLE: 'risposte_questionario',
-  VERSION: '1.0',
+  VERSION: '1.1',
 };
 
 const DRAFT_KEY = 'easycare-questionario-v1';
@@ -112,7 +112,7 @@ const Q = [
   },
   {
     id: 'coinvolto', section: S.you, type: 'single',
-    title: 'Sei attualmente coinvolto/a nell’assistenza di una persona fragile o anziana?',
+    title: 'Sei attualmente coinvolto/a nell’assistenza di una o più persone anziane o fragili?',
     options: YES_NO,
   },
   {
@@ -231,7 +231,7 @@ const Q = [
     id: 'ads_attivita', section: S.role, type: 'multi', showIf: showAdsBlock,
     title: 'Quali attività incidono maggiormente sul tuo tempo e sulla complessità del tuo incarico?',
     options: [
-      o('documenti', 'Raccogliere, aggiornare e reperire informazioni e documenti'),
+      o('documenti', 'Reperire, aggiornare, organizzare informazioni e documenti'),
       o('economia', 'Gestire entrate, spese e disponibilità economiche del beneficiario'),
       o('relazioni', 'Preparare relazioni, rendiconti e documentazione periodica'),
       o('enti', 'Gestire pratiche con enti pubblici, amministrazioni e istituzioni'),
@@ -327,18 +327,6 @@ const Q = [
     options: [o('solo_io', 'Solo io'), o('2', '2 persone'), o('3-4', '3–4 persone'), o('5+', '5 o più persone')],
   },
   {
-    id: 'fam_difficolta_gestione', section: S.exp, type: 'single',
-    showIf: (a) => isFam(a) && !!a.fam_persone_famiglia && a.fam_persone_famiglia !== 'solo_io',
-    title: 'Quanto trovate difficile gestire gli aspetti organizzativi ed economici dell’assistenza?',
-    options: [
-      o('per_nulla', 'Per nulla difficile'),
-      o('poco', 'Poco difficile'),
-      o('abbastanza', 'Abbastanza difficile'),
-      o('molto', 'Molto difficile'),
-      o('estremamente', 'Estremamente difficile'),
-    ],
-  },
-  {
     id: 'fam_figure_esterne', section: S.exp, type: 'multi', showIf: isFam,
     title: 'Sono presenti figure professionali esterne?',
     options: [
@@ -366,7 +354,7 @@ const Q = [
   },
   {
     id: 'fam_difficolta_coordinamento', section: S.org, type: 'single', showIf: isFam,
-    title: 'Quanto trovi difficile coordinare informazioni, appuntamenti e attività tra le persone coinvolte nell’assistenza?',
+    title: 'Quanto trovi difficile coordinare informazioni, appuntamenti, aspetti economici e attività tra le persone coinvolte nell’assistenza?',
     options: [
       o('per_nulla', 'Per nulla difficile'),
       o('poco', 'Poco difficile'),
@@ -556,12 +544,12 @@ const Q = [
       o('promemoria_visite', 'Promemoria visite e appuntamenti'),
       o('promemoria_farmaci', 'Promemoria farmaci e scadenze'),
       o('spese', 'Gestione e divisione di spese e costi'),
-      o('monitoraggio_cure', 'Monitoraggio delle cure e delle disposizioni medico-sanitarie'),
+      o('monitoraggio_cure', 'Monitoraggio delle cure e delle disposizioni medico-sanitarie per l’assistito'),
       o('archivio', 'Archivio documenti e storico dei dati medico-sanitari'),
-      o('registro_attivita', 'Registro delle attività svolte dai professionisti'),
+      o('registro_attivita', 'Registro delle attività svolte dai professionisti che supportano l’assistito'),
       o('chat', 'Chat tra le persone coinvolte nelle cure e nell’assistenza'),
       o('pratiche', 'Semplificazione delle pratiche previdenziali e assistenziali'),
-      o('report', 'Report personalizzati sullo stato di salute dell’assistito'),
+      o('report', 'Reportistica personalizzata sullo stato di salute dell’assistito'),
       OTHER(),
     ],
   },
@@ -706,7 +694,7 @@ function renderWelcome() {
       ${brand}
       <h1 class="hero-title" tabindex="-1">Questionario sulla gestione dell’assistenza a familiari anziani o fragili</h1>
       <p class="greet">Ciao,</p>
-      <p style="margin-top:6px">il team di EasyCare sta conducendo una ricerca per comprendere le esigenze e le difficoltà di chi assiste un anziano o una persona fragile. Siamo impegnati nella creazione di una soluzione che aiuti davvero le figure coinvolte nell’assistenza.</p>
+      <p style="margin-top:6px">il team di EasyCare sta conducendo una ricerca per comprendere le esigenze e le difficoltà di chi assiste un anziano o una persona fragile. Stiamo costruendo una soluzione pensata per generare un impatto concreto, basandoci sull’esperienza e sulle esigenze delle persone coinvolte nell’assistenza.</p>
       <p>Grazie per il tuo tempo.</p>
       <ul class="meta">
         <li>${ICON.clock} Circa 10 minuti</li>
