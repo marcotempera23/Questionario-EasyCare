@@ -10,7 +10,17 @@ const CONFIG = {
   SUPABASE_URL: 'https://fqzvpwiujvjvdricqokg.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_FNCvkAFCzVpZCsYWLdksag_ihtjfNNI', // chiave "Publishable" (sb_publishable_…) oppure "anon public" (eyJ…)
   TABLE: 'risposte_questionario',
-  VERSION: '1.2',
+  VERSION: '1.3',
+};
+
+/* ==========================================================
+   INFORMATIVA PRIVACY (mostrata nella schermata iniziale)
+   ========================================================== */
+const PRIVACY = {
+  TITOLARE: 'Tr360care',
+  EMAIL: 'contact@tr360care.com', // indirizzo a cui scrivere per esercitare i diritti
+  CONSERVAZIONE: 'fino al termine della ricerca e comunque non oltre 24 mesi dalla raccolta',
+  VERSIONE: '1.0',
 };
 
 const DRAFT_KEY = 'tr360care-questionario-v1';
@@ -699,6 +709,10 @@ function renderWelcome() {
         <li>${ICON.lock} Anonimo</li>
         <li>${ICON.save} Puoi interrompere e riprendere</li>
       </ul>
+      ${informativaHTML()}
+      <label class="consent consent-start"><input type="checkbox" id="consenso-informativa" ${A.consenso_informativa ? 'checked' : ''}>
+        <span>Ho letto l’informativa, ho almeno 18 anni e acconsento a partecipare e al trattamento delle mie risposte, in forma anonima, per le finalità di ricerca descritte.</span></label>
+      <p class="error" role="alert"></p>
       <div class="actions">
         ${draft
           ? `<button class="btn btn-primary" data-act="resume">Riprendi da dove eri rimasto/a ${ICON.arrowR}</button>
@@ -706,6 +720,32 @@ function renderWelcome() {
           : `<button class="btn btn-primary" data-act="start">Inizia il questionario ${ICON.arrowR}</button>`}
       </div>
     </div></div>`, '.hero-title');
+}
+
+function informativaHTML() {
+  const titolare = PRIVACY.TITOLARE || 'il team Tr360care';
+  return `<details class="informativa">
+    <summary>Informativa sul trattamento dei dati e consenso informato</summary>
+    <div class="informativa-body">
+      <p><strong>Chi tratta i dati.</strong> Il titolare del trattamento è ${titolare}${PRIVACY.EMAIL ? ` (<a href="mailto:${PRIVACY.EMAIL}">${PRIVACY.EMAIL}</a>)` : ''}.</p>
+      <p><strong>Scopo.</strong> Le risposte servono esclusivamente a una ricerca sulle esigenze e le difficoltà di chi assiste persone anziane o fragili, per progettare il servizio Tr360care. Non vengono usate per finalità commerciali né cedute a terzi.</p>
+      <p><strong>Quali dati.</strong> Il questionario è anonimo: non chiediamo nome, indirizzo o altri dati che ti identifichino. Ti chiediamo informazioni generali (fascia di età, sesso, ruolo) ed esperienze legate all’assistenza. Ti invitiamo a non inserire, nelle risposte libere, nomi o dati sanitari riferiti a persone specifiche.</p>
+      <p><strong>Contatti facoltativi.</strong> Solo se alla fine scegli di partecipare alla sperimentazione ti chiederemo nome ed e-mail, con un consenso separato. Questi dati vengono usati unicamente per ricontattarti.</p>
+      <p><strong>Come e per quanto tempo.</strong> I dati sono conservati in un database protetto (Supabase), accessibile solo al team di ricerca, ${PRIVACY.CONSERVAZIONE}. I risultati saranno presentati solo in forma aggregata. Per permetterti di interrompere e riprendere, le risposte in corso vengono salvate temporaneamente solo nel tuo browser.</p>
+      <p><strong>Partecipazione volontaria.</strong> La partecipazione è libera e gratuita: puoi interrompere in qualsiasi momento senza alcuna conseguenza. Le risposte vengono inviate solo quando completi il questionario.</p>
+      <p><strong>I tuoi diritti.</strong> Ai sensi del Regolamento UE 2016/679 (GDPR) puoi chiedere accesso, rettifica, cancellazione o limitazione dei tuoi dati, revocare il consenso${PRIVACY.EMAIL ? ` scrivendo a <a href="mailto:${PRIVACY.EMAIL}">${PRIVACY.EMAIL}</a>` : ''} e proporre reclamo al Garante per la protezione dei dati personali. Poiché le risposte sono anonime, potremmo non essere in grado di ricondurle a te.</p>
+    </div>
+  </details>`;
+}
+
+function hasConsent() {
+  const box = document.getElementById('consenso-informativa');
+  if (box && box.checked) {
+    A.consenso_informativa = A.consenso_informativa || new Date().toISOString();
+    return true;
+  }
+  showError('Per iniziare è necessario leggere l’informativa e dare il consenso.');
+  return false;
 }
 
 function progressOf(q) {
@@ -969,7 +1009,10 @@ function collect() {
   const p = path(A);
   return {
     percorso: p === 'fam' ? 'familiari' : p === 'pro' ? 'professionisti' : null,
-    risposte,
+    risposte: {
+      consenso_informativa: { accettato: !!A.consenso_informativa, data: A.consenso_informativa || null, versione: PRIVACY.VERSIONE },
+      ...risposte,
+    },
     contatti,
   };
 }
@@ -1022,7 +1065,7 @@ async function finish(esito) {
    NAVIGAZIONE
    ========================================================== */
 function start() {
-  A = {};
+  A = { consenso_informativa: A.consenso_informativa };
   history = [];
   current = Q[0].id;
   startedAt = Date.now();
@@ -1083,11 +1126,14 @@ $app.addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]');
   if (!b) return;
   const act = b.dataset.act;
-  if (act === 'start' || act === 'restart') { clearDraft(); start(); }
-  else if (act === 'resume') {
-    const d = loadDraft();
-    if (!d) return start();
+  if (act === 'start' || act === 'restart' || act === 'resume') {
+    if (!hasConsent()) return;
+    const consent = A.consenso_informativa;
+    const d = act === 'resume' && loadDraft();
+    if (!d) { clearDraft(); return start(); }
     ({ A, current, history, startedAt } = d);
+    A.consenso_informativa = A.consenso_informativa || consent;
+    saveDraft();
     renderQuestion();
   }
   else if (act === 'next') goNext();

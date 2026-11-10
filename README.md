@@ -18,6 +18,11 @@ Le domande sono tutte nell'array `Q` in `app.js`: per modificare un testo o un'o
 
 Carica la cartella in un repository → *Settings → Pages* → branch `main`, cartella `/ (root)`.
 
+## Informativa privacy
+
+Il testo è in `informativaHTML()` in `app.js`; titolare, e-mail di contatto e tempi di conservazione
+si impostano nell'oggetto `PRIVACY`. Se modifichi il testo, aumenta `PRIVACY.VERSIONE`.
+
 ## Collegamento a Supabase
 
 1. In Supabase, *SQL Editor*, esegui:
@@ -49,7 +54,8 @@ create policy "inserimento anonimo"
 
 ## Formato dei dati
 
-`risposte` contiene solo le domande effettivamente mostrate. Chiavi:
+`risposte` contiene solo le domande effettivamente mostrate, più `consenso_informativa`
+(`{ accettato, data, versione }`: consenso dato nella schermata iniziale). Chiavi:
 
 - scelta singola → stringa (`"fam_durata": "1-3_anni"`)
 - scelta multipla → array (`"fam_strumenti": ["messaggistica", "email"]`)
