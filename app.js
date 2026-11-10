@@ -10,10 +10,10 @@ const CONFIG = {
   SUPABASE_URL: 'https://fqzvpwiujvjvdricqokg.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_FNCvkAFCzVpZCsYWLdksag_ihtjfNNI', // chiave "Publishable" (sb_publishable_…) oppure "anon public" (eyJ…)
   TABLE: 'risposte_questionario',
-  VERSION: '1.1',
+  VERSION: '1.2',
 };
 
-const DRAFT_KEY = 'easycare-questionario-v1';
+const DRAFT_KEY = 'tr360care-questionario-v1';
 
 /* ==========================================================
    DEFINIZIONE DELLE DOMANDE
@@ -27,16 +27,16 @@ const o = (v, l, extra = {}) => ({ v, l, ...extra });
 const OTHER = (l = 'Altro') => o('altro', l, { other: true });
 const YES_NO = [o('si', 'Sì'), o('no', 'No')];
 
-// Ruoli che seguono il percorso "familiari"; tutti gli altri (compresi tutore e
-// amministratore di sostegno) seguono il percorso "professionisti"
+// Ruoli che seguono il percorso "familiari"; tutti gli altri seguono il percorso "professionisti"
 const FAMILY_ROLES = ['familiare', 'amico', 'vicino', 'informale', 'assistente_sociale'];
+// Tutore e amministratore di sostegno: sotto-ruoli di "Professionista dell'assistenza domiciliare"
 const ADS_ROLES = ['ads', 'tutore'];
 
 const path = (a) => (!a.categoria ? null : FAMILY_ROLES.includes(a.categoria) ? 'fam' : 'pro');
 const isFam = (a) => path(a) === 'fam';
 const isPro = (a) => path(a) === 'pro';
-const isAdsRole = (a) => ADS_ROLES.includes(a.categoria);
-// Tutore/AdS (domanda 2) vedono il blocco subito dopo la domanda 4, senza la domanda 5
+const isAdsRole = (a) => a.categoria === 'professionista' && ADS_ROLES.includes(a.categoria_dettaglio);
+// Tutore/AdS (sotto-ruolo del professionista) vedono il blocco subito dopo la domanda 4, senza la domanda 5
 const showAdsBlock = (a) =>
   isFam(a) ? a.fam_ads_nominato === 'si_io' : isPro(a) && (isAdsRole(a) || a.pro_ads === 'si');
 
@@ -141,19 +141,18 @@ const Q = [
       o('amico', 'Amico o conoscente'),
       o('vicino', 'Vicino di casa'),
       o('informale', 'Assistente informale', { hint: 'Persona che presta assistenza regolarmente senza essere familiare' }),
-      o('ads', 'Amministratore di sostegno'),
-      o('tutore', 'Tutore'),
       o('professionista', 'Professionista dell’assistenza domiciliare', {
         subTitle: 'Qual è il tuo ruolo?',
         sub: [
-          o('badante_convivente', 'Badante convivente'),
-          o('badante_non_convivente', 'Badante non convivente'),
+          o('collaboratore_domestico_convivente', 'Collaboratore domestico convivente'),
+          o('collaboratore_domestico_non_convivente', 'Collaboratore domestico non convivente'),
           o('oss', 'OSS (operatore socio-sanitario)'),
           o('infermiere', 'Infermiere'),
           o('fisioterapista', 'Fisioterapista'),
           o('educatore', 'Educatore professionale'),
-          o('collaboratore_domestico', 'Collaboratore domestico'),
           o('case_manager', 'Case manager'),
+          o('ads', 'Amministratore di sostegno'),
+          o('tutore', 'Tutore'),
           OTHER(),
         ],
       }),
@@ -376,9 +375,8 @@ const Q = [
     ],
   },
   {
-    id: 'fam_aspetto_stressante', section: S.org, type: 'single', showIf: isFam,
+    id: 'fam_aspetto_stressante', section: S.org, type: 'multi', showIf: isFam,
     title: 'Quale aspetto trovi più stressante?',
-    help: 'Scegli quello che pesa di più.',
     options: [
       o('appuntamenti_scadenze', 'Ricordare appuntamenti e scadenze'),
       o('coordinare_persone', 'Coordinare familiari, badanti o personale di supporto'),
@@ -482,7 +480,7 @@ const Q = [
     ],
   },
   {
-    id: 'pro_attivita_tempo', section: S.org, type: 'single', showIf: isPro,
+    id: 'pro_attivita_tempo', section: S.org, type: 'multi', showIf: isPro,
     title: 'Quale attività occupa più tempo nel tuo lavoro, oltre all’assistenza diretta della persona?',
     options: [
       o('telefonate', 'Telefonate'),
@@ -672,7 +670,7 @@ const ICON = {
   share: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>`,
 };
 
-const brand = `<div class="brand">${ICON.logo}<span>EasyCare</span></div>`;
+const brand = `<div class="brand">${ICON.logo}<span>Tr360care</span></div>`;
 
 /* ==========================================================
    RENDER
@@ -694,7 +692,7 @@ function renderWelcome() {
       ${brand}
       <h1 class="hero-title" tabindex="-1">Questionario sulla gestione dell’assistenza a familiari anziani o fragili</h1>
       <p class="greet">Ciao,</p>
-      <p style="margin-top:6px">il team di EasyCare sta conducendo una ricerca per comprendere le esigenze e le difficoltà di chi assiste un anziano o una persona fragile. Stiamo costruendo una soluzione pensata per generare un impatto concreto, basandoci sull’esperienza e sulle esigenze delle persone coinvolte nell’assistenza.</p>
+      <p style="margin-top:6px">il team di Tr360care sta conducendo una ricerca per comprendere le esigenze e le difficoltà di chi assiste un anziano o una persona fragile. Stiamo costruendo una soluzione pensata per generare un impatto concreto, basandoci sull’esperienza e sulle esigenze delle persone coinvolte nell’assistenza.</p>
       <p>Grazie per il tuo tempo.</p>
       <ul class="meta">
         <li>${ICON.clock} Circa 10 minuti</li>
@@ -978,7 +976,7 @@ function collect() {
 
 async function submitResponse(payload) {
   if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
-    console.info('[EasyCare] Supabase non configurato. Risposta che verrebbe inviata:', payload);
+    console.info('[Tr360care] Supabase non configurato. Risposta che verrebbe inviata:', payload);
     return;
   }
   const res = await fetch(`${CONFIG.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${CONFIG.TABLE}`, {
@@ -1068,7 +1066,7 @@ async function share() {
   const toast = $app.querySelector('.toast');
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'Questionario EasyCare', text: 'Ti chiedo 10 minuti per questo questionario sull’assistenza ad anziani e persone fragili.', url });
+      await navigator.share({ title: 'Questionario Tr360care', text: 'Ti chiedo 10 minuti per questo questionario sull’assistenza ad anziani e persone fragili.', url });
       return;
     }
     await navigator.clipboard.writeText(url);

@@ -1,4 +1,4 @@
-# Questionario EasyCare
+# Questionario Tr360care
 
 Form statico (HTML + CSS + JS, nessuna dipendenza) per il questionario sulla gestione dell'assistenza.
 Un unico link per tutti: dopo la domanda "A quale categoria appartieni?" il form prosegue con il
